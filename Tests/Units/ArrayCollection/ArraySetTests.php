@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of the Cubiche package.
  *
@@ -7,27 +8,29 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+namespace Cubiche\Core\Collections\Tests\Units\ArrayCollection;
 
-namespace Cubiche\Core\Collections\Tests\Units;
-
-use Cubiche\Core\Equatable\Tests\Fixtures\EquatableObject;
-use Cubiche\Core\Collections\ArrayCollection;
-use Cubiche\Core\Collections\ArrayCollectionInterface;
+use Cubiche\Core\Collections\ArrayCollection\ArraySet;
+use Cubiche\Core\Collections\ArrayCollection\ArraySetInterface;
 use Cubiche\Core\Collections\Exception\InvalidKeyException;
+use Cubiche\Core\Collections\Tests\Units\SetTestCase;
+use Cubiche\Core\Equatable\Tests\Fixtures\EquatableObject;
 
 /**
- * ArrayCollectionTests class.
+ * ArraySetTests class.
+ *
+ * @method protected ArraySetInterface randomCollection($size = null)
  *
  * @author Ivannis Suárez Jerez <ivannis.suarez@gmail.com>
  */
-class ArrayCollectionTests extends CollectionTestCase
+class ArraySetTests extends SetTestCase
 {
     /**
      * {@inheritdoc}
      */
     protected function emptyCollection()
     {
-        return new ArrayCollection();
+        return new ArraySet();
     }
 
     /**
@@ -53,9 +56,9 @@ class ArrayCollectionTests extends CollectionTestCase
     {
         $this
             ->given($collection = $this->randomCollection())
-            ->then
-                ->collection($collection)
-                    ->isInstanceOf(ArrayCollectionInterface::class)
+            ->then()
+                ->set($collection)
+                    ->isInstanceOf(ArraySetInterface::class)
         ;
     }
 
@@ -69,86 +72,40 @@ class ArrayCollectionTests extends CollectionTestCase
                 $unique = $this->uniqueValue(),
                 $collection = $this->randomCollection()
             )
-            ->then
+            ->then()
                 ->boolean($collection->contains($unique))
                     ->isFalse()
             ->and
             ->when($collection->add($unique))
-            ->then
+            ->then()
                 ->boolean($collection->contains($unique))
                     ->isTrue()
         ;
     }
 
     /*
-     * Test containsKey/set.
+     * Test containsAll.
      */
-    public function testContainsKey()
+    public function testContainsAll()
     {
         $this
             ->given(
-                $key = 'foo',
                 $unique = $this->uniqueValue(),
+                $other = 'foo',
                 $collection = $this->randomCollection()
             )
-            ->then
-                ->boolean($collection->containsKey($key))
+            ->then()
+                ->boolean($collection->contains($unique))
+                    ->isFalse()
+                ->boolean($collection->contains($other))
                     ->isFalse()
             ->and
-            ->when($collection->set($key, $unique))
-            ->then
-                ->boolean($collection->containsKey($key))
+            ->when($collection->addAll([$unique, $other]))
+            ->then()
+                ->boolean($collection->containsAll([$unique, $other]))
                     ->isTrue()
-            ->and
-            ->exception(function () use ($collection, $unique) {
-                $collection->set($unique, $unique);
-            })->isInstanceOf(InvalidKeyException::class)
-        ;
-    }
-
-    /*
-     * Test removeAt.
-     */
-    public function testRemoveAt()
-    {
-        $this
-            ->given(
-                $key = 'foo',
-                $unique = $this->uniqueValue(),
-                /** @var \Cubiche\Core\Collections\ArrayCollectionInterface $collection */
-                $collection = $this->randomCollection()
-            )
-            ->when($collection->set($key, $unique))
-            ->then
-                ->boolean($collection->containsKey($key))
-                    ->isTrue()
-            ->and
-            ->when($collection->removeAt($key))
-            ->then
-                ->boolean($collection->containsKey($key))
+                ->boolean($collection->containsAll([$unique, 'hjgasd756']))
                     ->isFalse()
-        ;
-    }
-
-    /*
-     * Test get.
-     */
-    public function testGet()
-    {
-        $this
-            ->given(
-                $key = 'foo',
-                $unique = $this->uniqueValue(),
-                $collection = $this->randomCollection()
-            )
-            ->then
-                ->variable($collection->get($key))
-                    ->isNull()
-            ->and
-            ->when($collection->set($key, $unique))
-            ->then
-                ->variable($collection->containsKey($key))
-                    ->isEqualTo($unique)
         ;
     }
 
@@ -164,15 +121,15 @@ class ArrayCollectionTests extends CollectionTestCase
                 $collection = $this->randomCollection()
             )
             ->when($collection->sort())
-            ->then
-                ->collection($collection)
+            ->then()
+                ->set($collection)
                     ->isSortedUsing($comparator)
             ->and
             ->when($collection->sort($reverseComparator))
-            ->then
-                ->collection($collection)
+            ->then()
+                ->set($collection)
                     ->isSortedUsing($reverseComparator)
-                ->collection($collection)
+                ->set($collection)
                     ->isNotSortedUsing($comparator)
         ;
     }
@@ -184,18 +141,21 @@ class ArrayCollectionTests extends CollectionTestCase
     {
         $this
             ->given(
-                $key = 'foo',
+                $key = 0,
                 $unique = $this->uniqueValue(),
-                $collection = $this->randomCollection()
+                $collection = $this->emptyCollection()
             )
-            ->then
+            ->then()
                 ->boolean(isset($collection[$key]))
                     ->isFalse()
             ->and
-            ->when($collection->set($key, $unique))
-            ->then
+            ->when($collection->add($unique))
+            ->then()
                 ->boolean(isset($collection[$key]))
                     ->isTrue()
+                ->exception(function () use ($collection) {
+                    isset($collection['foo']);
+                })->isInstanceOf(InvalidKeyException::class)
         ;
     }
 
@@ -206,16 +166,16 @@ class ArrayCollectionTests extends CollectionTestCase
     {
         $this
             ->given(
-                $key = 'foo',
+                $key = 0,
                 $unique = $this->uniqueValue(),
-                $collection = $this->randomCollection()
+                $collection = $this->emptyCollection()
             )
-            ->then
+            ->then()
                 ->variable($collection[$key])
                     ->isNull()
             ->and
-            ->when($collection->set($key, $unique))
-            ->then
+            ->when($collection->add($unique))
+            ->then()
                 ->variable($collection[$key])
                     ->isEqualTo($unique)
         ;
@@ -228,19 +188,16 @@ class ArrayCollectionTests extends CollectionTestCase
     {
         $this
             ->given(
-                $key = 'foo',
+                $key = 5,
                 $unique = $this->uniqueValue(),
                 $collection = $this->emptyCollection()
             )
             ->when($collection[$key] = $unique)
-            ->then
+            ->then()
                 ->variable($collection[$key])
+                    ->isNull()
+                ->variable($collection[0])
                     ->isEqualTo($unique)
-            ->and
-            ->when($collection[] = $key)
-            ->then
-                ->collection($collection)
-                    ->contains($key)
         ;
     }
 
@@ -251,7 +208,7 @@ class ArrayCollectionTests extends CollectionTestCase
     {
         $this
             ->given(
-                $key = 'foo',
+                $key = 0,
                 $unique = $this->uniqueValue(),
                 $collection = $this->emptyCollection()
             )
@@ -267,35 +224,5 @@ class ArrayCollectionTests extends CollectionTestCase
                 ->variable($collection[$key])
                     ->isNull()
         ;
-    }
-
-    /**
-     * Test keys.
-     */
-    public function testKeys()
-    {
-        $this
-            ->given(
-                $collection = $this->randomCollection()
-            )
-            ->when($keys = $collection->keys())
-                ->collection($keys)
-                   ->array($keys->toArray())
-                        ->isEqualTo(\array_keys($collection->toArray()));
-    }
-
-    /**
-     * Test values.
-     */
-    public function testValues()
-    {
-        $this
-            ->given(
-                $collection = $this->randomCollection()
-            )
-            ->when($values = $collection->values())
-                ->collection($values)
-                    ->array($values->toArray())
-                        ->isEqualTo(\array_values($collection->toArray()));
     }
 }

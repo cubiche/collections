@@ -8,19 +8,18 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 namespace Cubiche\Core\Collections;
 
-use Cubiche\Core\Comparable\ComparatorInterface;
-use Cubiche\Core\Specification\SpecificationInterface;
 use Cubiche\Core\Collections\DataSource\DataSourceInterface;
+use Cubiche\Core\Specification\SpecificationInterface;
 
 /**
- * Data Source Collection.
+ * DataSourceCollection Trait.
  *
  * @author Karel Osorio Ramírez <osorioramirez@gmail.com>
+ * @author Ivannis Suárez Jerez <ivannis.suarez@gmail.com>
  */
-class DataSourceCollection extends LazyCollection
+trait DataSourceCollectionTrait
 {
     /**
      * @var DataSourceInterface
@@ -62,30 +61,6 @@ class DataSourceCollection extends LazyCollection
     /**
      * {@inheritdoc}
      */
-    public function find(SpecificationInterface $criteria)
-    {
-        if ($this->isInitialized()) {
-            return parent::find($criteria);
-        }
-
-        return new self($this->dataSource->filteredDataSource($criteria));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function findOne(SpecificationInterface $criteria)
-    {
-        if ($this->isInitialized()) {
-            return parent::findOne($criteria);
-        }
-
-        return $this->dataSource->filteredDataSource($criteria)->findOne();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function slice($offset, $length = null)
     {
         if ($this->isInitialized()) {
@@ -98,24 +73,12 @@ class DataSourceCollection extends LazyCollection
     /**
      * {@inheritdoc}
      */
-    public function sorted(ComparatorInterface $criteria)
+    public function find(SpecificationInterface $criteria)
     {
         if ($this->isInitialized()) {
-            return parent::sorted($criteria);
+            return parent::find($criteria);
         }
 
-        return new self($this->dataSource->sortedDataSource($criteria));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function initialize()
-    {
-        $this->collection = new ArrayCollection();
-
-        foreach ($this->dataSource->getIterator() as $item) {
-            $this->collection->add($item);
-        }
+        return new self($this->dataSource->filteredDataSource($criteria));
     }
 }

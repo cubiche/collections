@@ -7,37 +7,19 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 namespace Cubiche\Core\Collections\Tests\Units;
 
+use Cubiche\Core\Collections\LazyCollection\LazyCollection;
 use Cubiche\Core\Comparable\Comparator;
-use Cubiche\Core\Collections\DataSource\ArrayDataSource;
-use Cubiche\Core\Collections\DataSourceCollection;
-use Cubiche\Core\Collections\LazyCollection;
 
 /**
- * DataSourceCollectionTests class.
+ * DataSourceCollectionTestCase trait.
  *
  * @author Ivannis Suárez Jerez <ivannis.suarez@gmail.com>
+ * @author Karel Osorio Ramírez <osorioramirez@gmail.com>
  */
-class DataSourceCollectionTests extends CollectionTestCase
+trait DataSourceCollectionTestCase
 {
-    /**
-     * {@inheritdoc}
-     */
-    protected function randomCollection($size = null)
-    {
-        return new DataSourceCollection(new ArrayDataSource($this->randomValues($size)));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function emptyCollection()
-    {
-        return new DataSourceCollection(new ArrayDataSource([]));
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -61,7 +43,7 @@ class DataSourceCollectionTests extends CollectionTestCase
     {
         $this
             ->given($collection = $this->randomCollection())
-            ->then
+            ->then()
                 ->collection($collection)
                     ->isInstanceOf(LazyCollection::class)
         ;
@@ -77,7 +59,7 @@ class DataSourceCollectionTests extends CollectionTestCase
         $this
             ->given($collection = $this->randomCollection())
             ->when($collection->clear())
-            ->then
+            ->then()
                 ->integer($collection->count())
                     ->isEqualTo(0)
         ;
@@ -93,7 +75,7 @@ class DataSourceCollectionTests extends CollectionTestCase
         $this
             ->given($collection = $this->randomCollection())
             ->when($collection->clear())
-            ->then
+            ->then()
                 ->object($collection->getIterator())
                     ->isInstanceOf(\Traversable::class)
         ;
@@ -110,7 +92,7 @@ class DataSourceCollectionTests extends CollectionTestCase
             ->given($collection = $this->randomCollection())
             ->when($collection->clear())
             ->and($slicedCollection = $collection->slice(0, 10))
-            ->then
+            ->then()
                 ->collection($slicedCollection)
                     ->isEmpty()
         ;
